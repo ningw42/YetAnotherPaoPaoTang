@@ -76,3 +76,6 @@ $RECYCLE.BIN/
 
 # WebStorm
 .idea/*
+
+# Socket.io
+socket.io/*
