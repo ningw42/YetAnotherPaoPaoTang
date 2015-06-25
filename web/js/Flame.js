@@ -53,6 +53,7 @@ Flame = Entity.extend({
 
 		gameEngine.stage.removeChild(this.bmp) ;
 
+		// remove all the flame related to the bomb
 		for (var i = 0 ; i < this.bomb.flames.length ; i++)
 		{
 			var flame = this.bomb.flames[i] ;
@@ -60,6 +61,7 @@ Flame = Entity.extend({
 				this.bomb.flames.splice(i , 1) ;
 		}
 
+		// remove current bomb from game
 		for (var i = 0 ; i < gameEngine.bombs.length ; i++)
 		{
 			var bomb = gameEngine.bombs[i] ;

@@ -57,6 +57,7 @@ Bomb = Entity.extend({
 		{
 			var position = positions[i] ;
 
+			// indicate the frame style according to its direction
 			if (position == this.position)
 				this.flame(position , 'center') ;
 			else if (position.x == this.position.x + this.strength)
@@ -72,6 +73,7 @@ Bomb = Entity.extend({
 			else if (position.y != this.position.y)
 				this.flame(position , 'vertical') ;
 
+			// get the material of the flamed tile
 			var material = gameEngine.getTileMaterial(position) ;
 			if (material == 'wall')
 			{
@@ -106,12 +108,14 @@ Bomb = Entity.extend({
 	} ,
 
 	getFlamePositions: function() {
+		// get all the positions that influenced by the bomb
 		var positions = [] ;
 		positions.push(this.position) ;
 
 		for (var i = 0 ; i < 4 ; i++)
 		{
 			var dirX , dirY ;
+			// four directions
 			if (i == 0)
 			{
 				dirX = 1 ;
@@ -133,6 +137,7 @@ Bomb = Entity.extend({
 				dirY = -1 ;
 			}
 
+			// strength in current direction
 			for (var j = 1 ; j <= this.strength ; j++)
 			{
 				var explode = true ;
@@ -145,7 +150,7 @@ Bomb = Entity.extend({
 
 				if (material == 'wall' || material == 'block')
 				{
-					explode = false ;
+					explode = false ; //
 					last = true ;
 				}
 				else if (material == 'wall')

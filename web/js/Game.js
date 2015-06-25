@@ -91,11 +91,13 @@ GameEngine = Class.extend({
 				}
 				else if ((i + 1) % 2 != 0 && (j + 1) % 2 != 0)
 				{
-					var tile = new Tile('block' , {x: i , y: j}) ;
+					var tile = new Tile('wall' , {x: i , y: j}) ;
 					this.tiles.push(tile) ;
 				}
 				else
-					var tile = new Tile('grass' , {x: i , y: j}) ;
+				{
+					var tile = new Tile('grass', {x: i, y: j});
+				}
 			}
 		}
 	} ,

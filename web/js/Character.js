@@ -12,7 +12,7 @@ Character = Entity.extend({
     },
 
     movingSpeed: 5 ,
-    bombMax: 10 ,
+    bombMax: 3 ,
     bombs: [] ,
     alive: true ,
 
@@ -126,6 +126,7 @@ Character = Entity.extend({
     bombListener: function() {
         var handler = this ; 
         inputEngine.addListener(this.controls.bomb , function() {
+            console.log("current bomb: " + gameEngine.bombs.length) ;
             for (var i = 0 ; i < gameEngine.bombs.length ; i++)
             {
                 var bomb = gameEngine.bombs[i] ;
@@ -139,6 +140,9 @@ Character = Entity.extend({
                 if (!handler.bombs[i].exploded)
                     unexplodedBombs += 1 ;
             }
+            console.log("unexplodedBombs: " + unexplodedBombs) ;
+            console.log(unexplodedBombs < handler.bombMax) ;
+            console.log(handler.bombMax) ;
 
             // Something wrong here
             if (unexplodedBombs < handler.bombMax)
@@ -147,6 +151,7 @@ Character = Entity.extend({
                 handler.bombs.push(bomb) ;
                 gameEngine.bombs.push(bomb) ;   
 
+                // add remove listener to new generated bomb
                 bomb.setExplodeListener(function() {
                     Utils.removeFromArray(this.bombs , bomb) ;
                 }) ;     

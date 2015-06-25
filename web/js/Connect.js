@@ -20,6 +20,6 @@ $(document).ready(function() {
 	gameEngine.socket.on('get-character-movement' , function(data) {
 		var action = inputEngine.handlers[data.keycode] ;
 		inputEngine.actions[action] = data.move ;
-		console.log(data.keycode) ;
+		//console.log(data.keycode) ;
 	}) ;
 }) ;

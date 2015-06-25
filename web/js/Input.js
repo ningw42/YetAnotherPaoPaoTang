@@ -48,8 +48,10 @@ InputEngine = Class.extend({
     		inputEngine.actions[action] = false ;
 
             var listeners = inputEngine.listeners[action] ;
+
             if (listeners)
             {
+                console.log(listeners.length) ;
                 for (var i = 0 ; i < listeners.length ; i++)
                 {
                     var listener = listeners[i] ;
