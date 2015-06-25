@@ -1,0 +1,23 @@
+#canvas {
+	margin-left: 1.5%;
+	margin-top: 1%;
+}
+
+#chat-room , .input-group {
+	margin-right: 5%;
+}
+
+#chat-room {
+	margin-top: 2%;	
+	height: 569px;
+	overflow: scroll;
+}
+
+.input-group {
+	margin-top:-4.6%;
+}
+
+.username {
+	color: red;
+	font-weight: bold;
+}
