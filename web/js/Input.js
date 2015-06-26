@@ -14,11 +14,11 @@ InputEngine = Class.extend({
         this.bind(40 , 'down') ;
         this.bind(32 , 'bomb') ;
 
-        this.bind(87, 'up2');
-        this.bind(65, 'left2');
-        this.bind(83, 'down2');
-        this.bind(68, 'right2');
-        this.bind(16, 'bomb2');
+        //this.bind(87, 'up2');
+        //this.bind(65, 'left2');
+        //this.bind(83, 'down2');
+        //this.bind(68, 'right2');
+        //this.bind(16, 'bomb2');
 
         document.addEventListener('keydown' , this.onKeyDown) ;
         document.addEventListener('keyup' , this.onKeyUp) ;
@@ -47,16 +47,11 @@ InputEngine = Class.extend({
             gameEngine.socket.emit('send-character-movement' , {keycode : event.keyCode , move: false}) ;
     		inputEngine.actions[action] = false ;
 
-            var listeners = inputEngine.listeners[action] ;
+            var listener = inputEngine.listeners[action] ;
 
-            if (listeners)
-            {
-                console.log(listeners.length) ;
-                for (var i = 0 ; i < listeners.length ; i++)
-                {
-                    var listener = listeners[i] ;
-                    listener() ;
-                }
+            if (listener) {
+                console.log(listener);
+                listener[0]();
             }
 
     		event.preventDefault() ;

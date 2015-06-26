@@ -146,7 +146,7 @@ Bomb = Entity.extend({
 				var position = {x: this.position.x + j * dirX , y: this.position.y + j * dirY} ;
 
 				var material = gameEngine.getTileMaterial(position) ;
-				//console.log(material) ;
+				// console.log(material) ;
 
 				if (material == 'wall' || material == 'block')
 				{

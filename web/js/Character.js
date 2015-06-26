@@ -124,7 +124,8 @@ Character = Entity.extend({
      } ,
 
     bombListener: function() {
-        var handler = this ; 
+        var handler = this ;
+        console.log('add listener') ;
         inputEngine.addListener(this.controls.bomb , function() {
             console.log("current bomb: " + gameEngine.bombs.length) ;
             for (var i = 0 ; i < gameEngine.bombs.length ; i++)
