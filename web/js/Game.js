@@ -12,19 +12,41 @@ GameEngine = Class.extend({
 	flamesImg: null ,
 	tilesImg: null ,
 
+	materials: ['john', 'betty', 'joe', 'mary'],
+
 	tilesSize: 24 ,
-	tilesX: 39 ,
-	tilesY: 25 ,
+	tilesX: 39 , // number of tiles horizontal
+	tilesY: 25 , // number of tiles vertical
 
 	bombs: [] ,
 	tiles: [] ,
-	characters: [] ,
+	remoteCharacters: [] ,
+	localCharacter: null ,
+
+	numberOfPlayers: 0 ,
 
 	socket: null ,
 
 	init: function() {
         
 	} ,
+
+	loadCurrentScene: function () {
+
+		// load all player
+		var scene = this;
+		this.socket.emit('demand-on-players-list');
+		this.socket.on('send-character-detail', function (data) {
+			console.log('Players : ' + data.id + ' ,' + data.position);
+			scene.createRemoteCharacter(data.id, data.position, data.material);
+		});
+		// some mistakes here better using block IO
+		this.socket.emit('remote-players-done');
+
+		this.socket.on('starting-load-local-player', function (data) {
+			scene.createLocalCharacter(data.nextPlayersID);
+		});
+	},
 
 	load: function() {
 		var socket = io.connect('/') ;
@@ -61,20 +83,46 @@ GameEngine = Class.extend({
 	setup: function() {
 		inputEngine.setup() ;
 		this.drawTiles() ;
-		this.createCharacter() ;
+		this.loadCurrentScene();
 
-		if (!createjs.Ticker.hasEventListener('tick')) {
-            createjs.Ticker.addEventListener('tick', gameEngine.update) ;
-            createjs.Ticker.setFPS(this.fps) ;
-        }
+		// polling for update
+        //if (!createjs.Ticker.hasEventListener('tick')) {
+        //    createjs.Ticker.addEventListener('tick', gameEngine.update) ;
+        //    createjs.Ticker.setFPS(this.fps) ;
+        //}
 	} ,
 
-	update: function() {
-		for (var i = 0 ; i < gameEngine.bombs.length ; i++)
-			gameEngine.bombs[i].update() ;
+	update: function(data) {
+		//for (var i = 0 ; i < gameEngine.bombs.length ; i++)
+		//	gameEngine.bombs[i].update() ;
 
-		for (var i = 0 ; i < gameEngine.characters.length ; i++)
-			gameEngine.characters[i].update() ;
+		var chars = data.characters;
+		var localChar = null;
+
+		// find update data for localChar and delete it from data stream
+		if (this.localCharacter) {
+			for (var i = 0; i < chars.length; i++) {
+				if (this.localCharacter.id == chars[i].id) {
+					localChar = chars[i];
+					chars = chars.splice(i, 1);
+					break;
+				}
+			}
+			// update localChar
+			gameEngine.localCharacter.update(localChar);
+		}
+
+		// find remote Char's data and update
+		if (gameEngine.remoteCharacters.length > 0) {
+			for (var i = 0; i < gameEngine.remoteCharacters.length; i++) {
+				for (var j = 0; j < chars.length; j++) {
+					if (gameEngine.remoteCharacters[i].id == chars[j].id) {
+						gameEngine.remoteCharacters[i].updateRemove(chars[j]);
+						break;
+					}
+				}
+			}
+		}
 
 		gameEngine.stage.update() ;
 	} ,
@@ -91,7 +139,7 @@ GameEngine = Class.extend({
 				}
 				else if ((i + 1) % 2 != 0 && (j + 1) % 2 != 0)
 				{
-					var tile = new Tile('wall' , {x: i , y: j}) ;
+					var tile = new Tile('grass' , {x: i , y: j}) ;
 					this.tiles.push(tile) ;
 				}
 				else
@@ -118,32 +166,51 @@ GameEngine = Class.extend({
 	} ,
 
 	getCharacters: function() {
+		// NOTE doest contains the localCharacter
 		var characters = [] ;
 
-        for (var i = 0 ; i < gameEngine.characters.length ; i++)
-            characters.push(gameEngine.characters[i]) ;
+        for (var i = 0 ; i < gameEngine.remoteCharacters.length ; i++)
+            characters.push(gameEngine.remoteCharacters[i]) ;
 
         return characters ;
 	} ,
 
-	createCharacter: function() {
-		var character = new Character('john' , {x: 1 , y: 1}) ;
-		this.characters.push(character) ;
+	insertNewCharacter: function (id, position, material) {
+		var character = new Character(id, position, material);
+		this.remoteCharacters.push(character);
+		this.numberOfPlayers++;
+	},
 
-		controls = {
-			'up': 'up2' ,
-			'left': 'left2' ,
-			'right': 'right2' ,
-			'down': 'down2' ,
-			'bomb': 'bomb2'
+	createLocalCharacter: function(id) {
+		// TO-DO find a position to add a new player
+		var position = {x: Math.floor(Math.random() * 39) , y: Math.floor(Math.random() * 25)} ;
+		var material = this.materials[Math.floor(Math.random() * 4)];
+		this.localCharacter = new Character(id, material, position) ;
+		this.socket.emit('add-player', {id : id, initPosition : position, material: material});
+		this.numberOfPlayers++;
+		//this.remoteCharacters.push(this.localCharacter) ;
+	},
+
+	createRemoteCharacter: function(id, position, material) {
+		var character = new Character(id, position, material) ;
+		this.numberOfPlayers++;
+		this.remoteCharacters.push(character) ;
+	},
+
+	removeCharacterById: function (id) {
+		for (var i = 0; i < this.remoteCharacters.length; i++) {
+			if (this.remoteCharacters[i].id === id) {
+				this.remoteCharacters[i].die();
+				this.remoteCharacters.splice(i, 1);
+				this.numberOfPlayers--;
+				break;
+			}
 		}
-		var character2 = new Character('betty' , {x: 37 , y: 23} , controls) ;
-		this.characters.push(character2) ;
-	} 
+	}
 
 }) ;
 
 gameEngine = new GameEngine() ;
 $(document).ready(function(){
 	gameEngine.load() ;
-}) ;
+})

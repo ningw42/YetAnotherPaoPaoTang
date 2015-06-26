@@ -1,3 +1,4 @@
+var scene = gameEngine;
 $(document).ready(function() {
 	$('#send-btn').click(function() {
 		message = $('#chat-text').val() ;
@@ -22,4 +23,29 @@ $(document).ready(function() {
 		inputEngine.actions[action] = data.move ;
 		//console.log(data.keycode) ;
 	}) ;
-}) ;
+
+	scene.socket.on('new-player-added', function (data) {
+		scene.insertNewCharacter(data.id, data.position, data.material);
+		console.log('player addition broadcast received');
+	});
+
+	scene.socket.on('player-remove', function (data) {
+		var id = data.id;
+		console.log('removing other players\' character');
+		scene.removeCharacterById(id);
+	});
+
+	scene.socket.on('broadcast-all-players-info', function (data) {
+		scene.update(data);
+	});
+});
+
+/*
+$(window).unload(function () {
+	// remove from local,  redundant!
+	var localCharacter = scene.localCharacter;
+	var index = scene.remoteCharacters.indexOf(localCharacter);
+	if (index != -1)
+		scene.remoteCharacters.splice(index, 1);
+	localCharacter.die();
+});*/

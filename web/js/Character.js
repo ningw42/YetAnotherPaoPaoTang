@@ -15,13 +15,12 @@ Character = Entity.extend({
     bombMax: 3 ,
     bombs: [] ,
     alive: true ,
+    id: null,
 
     escape: null ,
 
-    init: function(material , position , controls) {
-        if (controls)
-            this.controls = controls ;
-
+    init: function(id, position , material) {
+        this.id = id;
     	var characterImg = gameEngine.characterJohnImg ;
         if (material == 'betty')
             characterImg = gameEngine.characterBettyImg ;
@@ -47,6 +46,7 @@ Character = Entity.extend({
         this.bmp.scaleX = this.bmp.scaleY = gameEngine.scale ;
 
     	this.position = position ;
+        console.log(position);
     	var pixel = Utils.convertToBitmapPosition(position) ;
     	this.bmp.x = pixel.x - 4 ;
     	this.bmp.y = pixel.y - 7 ;
@@ -55,7 +55,42 @@ Character = Entity.extend({
         this.bombListener() ;
     } ,
 
-    update: function() {
+    updateRemove: function (metadata) {
+        if (!this.alive)
+            return ;
+
+        var position = {x: this.bmp.x , y: this.bmp.y} ;
+
+        var dirX = 0 , dirY = 0 ;
+        if (inputEngine.actions[this.controls.up])
+        {
+            this.animate('up') ;
+            position.y -= this.movingSpeed ;
+            dirY = -1 ;
+        }
+        else if (inputEngine.actions[this.controls.down])
+        {
+            this.animate('down') ;
+            position.y += this.movingSpeed ;
+            dirY = 1 ;
+        }
+        else if (inputEngine.actions[this.controls.left])
+        {
+            this.animate('left') ;
+            position.x -= this.movingSpeed ;
+            dirX = -1 ;
+        }
+        else if (inputEngine.actions[this.controls.right])
+        {
+            this.animate('right') ;
+            position.x += this.movingSpeed ;
+            dirX = 1 ;
+        }
+        else
+            this.animate('idle') ;
+    },
+
+    update: function(metadata) {
         if (!this.alive)
             return ;
 
