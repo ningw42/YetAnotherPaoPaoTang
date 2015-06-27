@@ -62,11 +62,21 @@ Flame = Entity.extend({
 		}
 
 		// remove current bomb from game
-		for (var i = 0 ; i < gameEngine.bombs.length ; i++)
+		for (var i = 0 ; i < gameEngine.localBombs.length ; i++)
 		{
-			var bomb = gameEngine.bombs[i] ;
-			if (this.bomb == bomb)
-				gameEngine.bombs.splice(i , 1) ;
+			var bomb = gameEngine.localBombs[i] ;
+			if (this.bomb == bomb) {
+				gameEngine.localBombs.splice(i, 1);
+			}
+		}
+
+		// remove remote bomb from game
+		for (var i = 0 ; i < gameEngine.remoteBombs.length ; i++)
+		{
+			var bomb = gameEngine.remoteBombs[i] ;
+			if (this.bomb == bomb) {
+				gameEngine.remoteBombs.splice(i, 1);
+			}
 		}
 	}
 }) ;

@@ -1,6 +1,5 @@
 
 exports.Character = function (id, position, material, bmpPosition) {
-    this.alive = true;
     this.id = id;
     this.position = position;
     this.material = material;
@@ -11,11 +10,11 @@ exports.Character = function (id, position, material, bmpPosition) {
     }
 };
 
-exports.Bomb = function (position, strengh) {
-        this.position = position;
-        this.isExploded = false;
-        this.strength = strengh;
-    }
+exports.Bomb = function (position, characterId, id) {
+    this.position = position;
+    this.characterId = characterId;
+    this.id = id;
+};
 
 exports.Flame = function(position, bomb) {
         this.bomb = bomb;

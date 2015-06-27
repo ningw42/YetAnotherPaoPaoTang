@@ -18,11 +18,13 @@ GameEngine = Class.extend({
 	tilesX: 39 , // number of tiles horizontal
 	tilesY: 25 , // number of tiles vertical
 
-	bombs: [] ,
+	localBombs: [] ,
+	remoteBombs: [] ,
+
 	tiles: [] ,
+
 	remoteCharacters: [] ,
 	localCharacter: null ,
-
 	numberOfPlayers: 0 ,
 
 	socket: null ,
@@ -85,16 +87,36 @@ GameEngine = Class.extend({
 		this.drawTiles() ;
 		this.loadCurrentScene();
 
-		// polling for update
-        //if (!createjs.Ticker.hasEventListener('tick')) {
-        //    createjs.Ticker.addEventListener('tick', gameEngine.update) ;
-        //    createjs.Ticker.setFPS(this.fps) ;
-        //}
+		setInterval(this.FPS, 1000);
 	} ,
 
+	FPS: function () {
+		if (this.localBombs)
+			console.log('local : ' + this.localBombs.length);
+		if (this.remoteBombs)
+			console.log('remote : ' + this.remoteBombs.length);
+
+		if (gameEngine.localBombs) {
+			for (var i = 0; i < gameEngine.localBombs.length; i++)
+				gameEngine.localBombs[i].FPS();
+		}
+
+		if (gameEngine.remoteBombs) {
+			for (var i = 0; i < gameEngine.remoteBombs.length; i++)
+				gameEngine.remoteBombs[i].FPS();
+		}
+	},
+
 	update: function(data) {
-		//for (var i = 0 ; i < gameEngine.bombs.length ; i++)
-		//	gameEngine.bombs[i].update() ;
+		if (this.localBombs) {
+			for (var i = 0; i < gameEngine.localBombs.length; i++)
+				gameEngine.localBombs[i].update();
+		}
+
+		if (this.remoteBombs) {
+			for (var i = 0; i < gameEngine.remoteBombs.length; i++)
+				gameEngine.remoteBombs[i].update();
+		}
 
 		var chars = data.characters;
 		var localChar = null;
@@ -119,7 +141,7 @@ GameEngine = Class.extend({
 			for (var i = 0; i < gameEngine.remoteCharacters.length; i++) {
 				for (var j = 0; j < chars.length; j++) {
 					if (gameEngine.remoteCharacters[i].id == chars[j].id) {
-						console.log('Updating Remote Player : ' + gameEngine.remoteCharacters[i].id);
+						//console.log('Updating Remote Player : ' + gameEngine.remoteCharacters[i].id);
 						gameEngine.remoteCharacters[i].updateRemote(chars[j]);
 						break;
 					}
@@ -168,7 +190,7 @@ GameEngine = Class.extend({
 		return tile ? tile.material : 'grass' ;
 	} ,
 
-	getCharacters: function() {
+	getRemoteCharacters: function() {
 		// NOTE doest contains the localCharacter
 		var characters = [] ;
 
@@ -179,7 +201,7 @@ GameEngine = Class.extend({
 	} ,
 
 	insertNewCharacter: function (id, position, material) {
-		var character = new Character(id, position, material);
+		var character = new Character(id, position, material, false);
 		this.remoteCharacters.push(character);
 		this.numberOfPlayers++;
 	},
@@ -189,14 +211,14 @@ GameEngine = Class.extend({
 		var position = {x: Math.floor(Math.random() * 37) + 1 , y: Math.floor(Math.random() * 23) + 1} ;
 		//var position = {x: 1 , y: 1} ;
 		var material = this.materials[Math.floor(Math.random() * 4)];
-		this.localCharacter = new Character(id, position, material) ;
+		this.localCharacter = new Character(id, position, material, true) ;
 		this.socket.emit('add-player', {id : id, initPosition : position, material: material, bmpPosition : {x : this.localCharacter.bmp.x, y : this.localCharacter.bmp.y}});
 		this.numberOfPlayers++;
 		//this.remoteCharacters.push(this.localCharacter) ;
 	},
 
 	createRemoteCharacter: function(id, position, material) {
-		var character = new Character(id, position, material) ;
+		var character = new Character(id, position, material, false) ;
 		this.numberOfPlayers++;
 		this.remoteCharacters.push(character) ;
 	},
@@ -210,8 +232,25 @@ GameEngine = Class.extend({
 				break;
 			}
 		}
-	}
+	},
 
+	insertNewBomb: function (data) {
+		// find the corresponding character
+		var corrsChar = null;
+		console.log(data.characterId);
+		for (var i = 0; i < this.remoteCharacters.length; i++) {
+			if (this.remoteCharacters[i].id == data.characterId) {
+				corrsChar = this.remoteCharacters[i];
+				break;
+			}
+		}
+		console.log(corrsChar);
+		// new bomb
+		if (corrsChar) {
+			var bomb = new Bomb(corrsChar, data.id);
+			this.remoteBombs.push(bomb);
+		}
+	}
 }) ;
 
 gameEngine = new GameEngine() ;

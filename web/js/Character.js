@@ -13,13 +13,15 @@ Character = Entity.extend({
 
     movingSpeed: 5 ,
     bombMax: 3 ,
+    totalNumberOfBombs: 0,
     bombs: [] ,
     alive: true ,
     id: null,
 
+
     escape: null ,
 
-    init: function(id, position , material) {
+    init: function(id, position , material, isLocal) {
         this.id = id;
     	var characterImg = gameEngine.characterJohnImg ;
         if (material == 'betty')
@@ -54,7 +56,8 @@ Character = Entity.extend({
     	this.bmp.y = pixel.y - 8;
 
         gameEngine.stage.addChild(this.bmp) ;
-        this.bombListener() ;
+        if (isLocal)
+            this.bombListener() ;
     } ,
 
     updateRemote: function (metadata) {
@@ -154,14 +157,16 @@ Character = Entity.extend({
             this.die() ;
      } ,
 
+    // Something wrong here
     bombListener: function() {
         var handler = this ;
         console.log('add listener') ;
+        console.log(handler);
         inputEngine.addListener(this.controls.bomb , function() {
-            console.log("current bomb: " + gameEngine.bombs.length) ;
-            for (var i = 0 ; i < gameEngine.bombs.length ; i++)
+            console.log("current bomb: " + gameEngine.localBombs.length) ;
+            for (var i = 0 ; i < gameEngine.localBombs.length ; i++)
             {
-                var bomb = gameEngine.bombs[i] ;
+                var bomb = gameEngine.localBombs[i] ;
                 if (Utils.comparePositions(bomb.position , handler.position))
                     return ;
             }
@@ -172,21 +177,26 @@ Character = Entity.extend({
                 if (!handler.bombs[i].exploded)
                     unexplodedBombs += 1 ;
             }
-            console.log("unexplodedBombs: " + unexplodedBombs) ;
-            console.log(unexplodedBombs < handler.bombMax) ;
-            console.log(handler.bombMax) ;
+            //console.log("unexplodedBombs: " + unexplodedBombs) ;
+            //console.log(unexplodedBombs < handler.bombMax) ;
+            //console.log(handler.bombMax) ;
 
             // Something wrong here
             if (unexplodedBombs < handler.bombMax)
             {
-                var bomb = new Bomb(handler.position) ;
+                //console.log(handler);
+                var bomb = new Bomb(handler, handler.totalNumberOfBombs) ;
                 handler.bombs.push(bomb) ;
-                gameEngine.bombs.push(bomb) ;   
+                gameEngine.localBombs.push(bomb) ;
 
                 // add remove listener to new generated bomb
                 bomb.setExplodeListener(function() {
-                    Utils.removeFromArray(this.bombs , bomb) ;
-                }) ;     
+                    // remove from character
+                    Utils.removeFromArray(handler.bombs , bomb) ;
+                }) ;
+
+                gameEngine.socket.emit('add-bomb', {position:bomb.position, characterId:bomb.characterId, id:bomb.id});
+                handler.totalNumberOfBombs = (handler.totalNumberOfBombs + 1) % handler.bombMax;
             }
         }) ;
     } ,
@@ -252,13 +262,15 @@ Character = Entity.extend({
     detectBomb: function(pixels) {
         var position = Utils.convertToEntityPosition(pixels) ;
 
-        for (var i = 0 ; i < gameEngine.bombs.length ; i++)
+        for (var i = 0 ; i < gameEngine.localBombs.length ; i++)
         {
-            var bomb = gameEngine.bombs[i] ;
+            var bomb = gameEngine.localBombs[i] ;
             if (bomb.position.x == position.x && bomb.position.y == position.y)
             {
-                if (this.escape)
-                    return false ;
+                if (this.escape) {
+                    //console.log(this.escape);
+                    return false;
+                }
                 else
                     return true ;
             }
@@ -271,7 +283,7 @@ Character = Entity.extend({
     } ,
 
     detectFire: function() {
-        var bombs = gameEngine.bombs ;
+        var bombs = gameEngine.localBombs ;
 
         for (var i = 0 ; i < bombs.length ; i++)
         {

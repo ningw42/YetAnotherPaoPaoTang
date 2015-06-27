@@ -29,6 +29,12 @@ $(document).ready(function() {
 		console.log('player addition broadcast received');
 	});
 
+	scene.socket.on('new-bomb-added', function (data) {
+		scene.insertNewBomb(data);
+		console.log('bomb addition broadcast received');
+		console.log(data);
+	});
+
 	scene.socket.on('player-remove', function (data) {
 		var id = data.id;
 		console.log('removing other players\' character');

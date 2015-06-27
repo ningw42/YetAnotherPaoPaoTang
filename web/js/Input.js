@@ -44,8 +44,8 @@ InputEngine = Class.extend({
             var listener = inputEngine.listeners[action] ;
 
             if (listener) {
-                console.log(listener);
-                listener[0]();
+                //console.log(listener);
+                listener();
             }
 
     		event.preventDefault() ;
@@ -55,8 +55,9 @@ InputEngine = Class.extend({
     } , 
 
     addListener: function(action , listener) {
-        this.listeners[action] = this.listeners[action] || new Array() ;
-        this.listeners[action].push(listener) ;
+        this.listeners[action] = listener;
+        //this.listeners[action] = this.listeners[action] || new Array() ;
+        //this.listeners[action].push(listener) ;
     } ,
 
     removeListener: function() {

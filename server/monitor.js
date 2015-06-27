@@ -1,5 +1,6 @@
 Characters = [];
 Bombs = [];
+mapOfCharacterAndBombList = [];
 Flames = [];
 candidateID = 0;
 mapOfClientAndCharacterId = {};
@@ -40,6 +41,42 @@ exports.start = function(io) {
 			socket.broadcast.emit('new-player-added', {id : char.id, position : char.position, material : char.material});
 		});
 
+		socket.on('add-bomb', function (data) {
+			var bombPosition = data.position;
+			var bombCharId = data.characterId;
+			var bombId = data.id;
+
+			var bomb = null;
+			var bombListByCharacterId = mapOfCharacterAndBombList[bombCharId];
+			if (bombListByCharacterId) {
+				bomb = new Entity.Bomb(bombPosition, bombCharId, bombId);
+				bombListByCharacterId[bombId] = bomb;
+				Bombs.push(bomb);
+			} else {
+				var bombList = [];
+				bomb = new Entity.Bomb(bombPosition, bombCharId, bombId);
+				bombList[bombId] = bomb;
+				mapOfCharacterAndBombList[bombCharId] = bombList;
+				Bombs.push(bomb);
+			}
+			socket.broadcast.emit('new-bomb-added', bomb);
+		});
+
+		socket.on('remove-bomb', function (data) {
+			var bombCharId = data.characterId;
+			var bombId = data.id;
+
+			// remove from list
+			for (var i = 0; i < Bombs.length; i++) {
+				if (Bombs[i].id == bombId && Bombs[i].characterId == bombCharId) {
+					Bombs.splice(i, 1);
+				}
+			}
+
+			// remove from map
+			mapOfCharacterAndBombList[bombCharId][bombId] = null;
+		});
+
 		socket.on('disconnect', function() {
 			console.log('closed socket id : ' + socket.id);
 			var charId = mapOfClientAndCharacterId[socket.id];
@@ -57,8 +94,8 @@ exports.start = function(io) {
 		setInterval(function() {
 			// broadcast data 25 times per second
 			if (Characters.length > 0) {
-				socket.emit('broadcast-all-players-info', {characters: Characters, bombs: Bombs});
-				socket.broadcast.emit('broadcast-all-players-info', {characters: Characters, bombs: Bombs});
+				socket.emit('broadcast-all-players-info', {characters: Characters, bombs: mapOfCharacterAndBombList});
+				socket.broadcast.emit('broadcast-all-players-info', {characters: Characters, bombs: mapOfCharacterAndBombList});
 			}
 		}, 200);
 	}) ;
