@@ -98,26 +98,29 @@ GameEngine = Class.extend({
 
 		var chars = data.characters;
 		var localChar = null;
+		//console.log('before ' + chars.length);
 
 		// find update data for localChar and delete it from data stream
 		if (this.localCharacter) {
 			for (var i = 0; i < chars.length; i++) {
 				if (this.localCharacter.id == chars[i].id) {
 					localChar = chars[i];
-					chars = chars.splice(i, 1);
+					chars.splice(i, 1);
 					break;
 				}
 			}
 			// update localChar
 			gameEngine.localCharacter.update(localChar);
 		}
+		//console.log('after ' + chars.length);
 
 		// find remote Char's data and update
 		if (gameEngine.remoteCharacters.length > 0) {
 			for (var i = 0; i < gameEngine.remoteCharacters.length; i++) {
 				for (var j = 0; j < chars.length; j++) {
 					if (gameEngine.remoteCharacters[i].id == chars[j].id) {
-						gameEngine.remoteCharacters[i].updateRemove(chars[j]);
+						console.log('Updating Remote Player : ' + gameEngine.remoteCharacters[i].id);
+						gameEngine.remoteCharacters[i].updateRemote(chars[j]);
 						break;
 					}
 				}
@@ -137,11 +140,11 @@ GameEngine = Class.extend({
 					var tile = new Tile('block' , {x: i , y: j}) ;
 					this.tiles.push(tile) ;
 				}
-				else if ((i + 1) % 2 != 0 && (j + 1) % 2 != 0)
+/*				else if ((i + 1) % 2 != 0 && (j + 1) % 2 != 0)
 				{
 					var tile = new Tile('grass' , {x: i , y: j}) ;
 					this.tiles.push(tile) ;
-				}
+				}*/
 				else
 				{
 					var tile = new Tile('grass', {x: i, y: j});
@@ -183,10 +186,11 @@ GameEngine = Class.extend({
 
 	createLocalCharacter: function(id) {
 		// TO-DO find a position to add a new player
-		var position = {x: Math.floor(Math.random() * 39) , y: Math.floor(Math.random() * 25)} ;
+		var position = {x: Math.floor(Math.random() * 37) + 1 , y: Math.floor(Math.random() * 23) + 1} ;
+		//var position = {x: 1 , y: 1} ;
 		var material = this.materials[Math.floor(Math.random() * 4)];
-		this.localCharacter = new Character(id, material, position) ;
-		this.socket.emit('add-player', {id : id, initPosition : position, material: material});
+		this.localCharacter = new Character(id, position, material) ;
+		this.socket.emit('add-player', {id : id, initPosition : position, material: material, bmpPosition : {x : this.localCharacter.bmp.x, y : this.localCharacter.bmp.y}});
 		this.numberOfPlayers++;
 		//this.remoteCharacters.push(this.localCharacter) ;
 	},

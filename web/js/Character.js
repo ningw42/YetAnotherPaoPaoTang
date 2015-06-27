@@ -43,51 +43,47 @@ Character = Entity.extend({
     	}) ;
 
     	this.bmp = new createjs.Sprite(spriteSheet) ;
+        // amplify the image
         this.bmp.scaleX = this.bmp.scaleY = gameEngine.scale ;
 
     	this.position = position ;
         console.log(position);
     	var pixel = Utils.convertToBitmapPosition(position) ;
-    	this.bmp.x = pixel.x - 4 ;
-    	this.bmp.y = pixel.y - 7 ;
+        // fix image bias
+    	this.bmp.x = pixel.x - 4;
+    	this.bmp.y = pixel.y - 8;
 
         gameEngine.stage.addChild(this.bmp) ;
         this.bombListener() ;
     } ,
 
-    updateRemove: function (metadata) {
+    updateRemote: function (metadata) {
         if (!this.alive)
             return ;
 
-        var position = {x: this.bmp.x , y: this.bmp.y} ;
+        var pixel = Utils.convertToBitmapPosition(metadata.position) ;
+        // fix image bias
+        //this.bmp.x = pixel.x - 4;
+        //this.bmp.y = pixel.y - 8;
 
-        var dirX = 0 , dirY = 0 ;
-        if (inputEngine.actions[this.controls.up])
-        {
-            this.animate('up') ;
-            position.y -= this.movingSpeed ;
-            dirY = -1 ;
-        }
-        else if (inputEngine.actions[this.controls.down])
-        {
-            this.animate('down') ;
-            position.y += this.movingSpeed ;
-            dirY = 1 ;
-        }
-        else if (inputEngine.actions[this.controls.left])
-        {
-            this.animate('left') ;
-            position.x -= this.movingSpeed ;
-            dirX = -1 ;
-        }
-        else if (inputEngine.actions[this.controls.right])
-        {
+        // animate
+        if (metadata.bmpPosition.x > this.bmp.x) {
             this.animate('right') ;
-            position.x += this.movingSpeed ;
-            dirX = 1 ;
-        }
-        else
+        } else if (metadata.bmpPosition.x < this.bmp.x) {
+            this.animate('left') ;
+        } else if (metadata.bmpPosition.y > this.bmp.y) {
+            this.animate('down') ;
+        } else if (metadata.bmpPosition.y < this.bmp.y) {
+            this.animate('up') ;
+        } else {
             this.animate('idle') ;
+        }
+
+        this.bmp.x = metadata.bmpPosition.x;
+        this.bmp.y = metadata.bmpPosition.y;
+
+        // update position
+        this.updateRemotePosition(metadata);
     },
 
     update: function(metadata) {
@@ -293,7 +289,15 @@ Character = Entity.extend({
 
     updatePosition: function() {
         this.position = Utils.convertToEntityPosition(this.bmp) ;
+        // TO-DO
+        gameEngine.socket.emit('local-player-info-update', {position : this.position, bmpPosition : {x : this.bmp.x, y : this.bmp.y}});
     } ,
+
+    updateRemotePosition: function (data) {
+        this.position = data.position;
+        this.bmp.x = data.bmpPosition.x;
+        this.bmp.y = data.bmpPosition.y;
+    },
 
     die: function() {
         this.alive = false ;

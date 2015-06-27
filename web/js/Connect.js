@@ -37,6 +37,7 @@ $(document).ready(function() {
 
 	scene.socket.on('broadcast-all-players-info', function (data) {
 		scene.update(data);
+		//console.log(data);
 	});
 });
 

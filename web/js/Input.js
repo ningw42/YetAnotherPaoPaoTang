@@ -26,7 +26,7 @@ InputEngine = Class.extend({
     	var action = inputEngine.handlers[event.keyCode] ;
     	if (action)
     	{
-            gameEngine.socket.emit('send-character-movement' , {character : gameEngine.localCharacter.id, action : action, move : true}) ;
+            //gameEngine.socket.emit('send-character-movement' , {character : gameEngine.localCharacter.id, action : action, move : true}) ;
     		inputEngine.actions[action] = true ;
     		event.preventDefault() ;
     	}
@@ -38,7 +38,7 @@ InputEngine = Class.extend({
     	var action = inputEngine.handlers[event.keyCode] ;
     	if (action)
     	{
-            gameEngine.socket.emit('send-character-movement' , {character : gameEngine.localCharacter.id, action : action, move: false}) ;
+            //gameEngine.socket.emit('send-character-movement' , {character : gameEngine.localCharacter.id, action : action, move: false}) ;
     		inputEngine.actions[action] = false ;
 
             var listener = inputEngine.listeners[action] ;

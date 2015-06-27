@@ -2,6 +2,7 @@ Characters = [];
 Bombs = [];
 Flames = [];
 candidateID = 0;
+mapOfClientAndCharacterId = {};
 mapOfClientAndCharacter = {};
 
 var Entity = require('./Entity');
@@ -23,32 +24,34 @@ exports.start = function(io) {
 			socket.broadcast.emit('get-chat' , data) ;
 		});
 
-		socket.on('send-character-movement' , function(data) {
+/*		socket.on('send-character-movement' , function(data) {
 			console.log(data) ;
 			socket.emit('get-character-movement' , data) ;
 			socket.broadcast.emit('broadcast-character-movement' , data) ;
-		}) ;
+		}) ;*/
 
 		socket.on('add-player', function(data) {
 			candidateID++;
 			console.log(data);
-			mapOfClientAndCharacter[socket.id] = data.id;
-			var char = new Entity.Character(data.id, data.initPosition, data.material);
+			mapOfClientAndCharacterId[socket.id] = data.id;
+			var char = new Entity.Character(data.id, data.initPosition, data.material, data.bmpPosition);
 			Characters.push(char);
+			mapOfClientAndCharacter[socket.id] = char;
 			socket.broadcast.emit('new-player-added', {id : char.id, position : char.position, material : char.material});
-		});
-
-		socket.on('remove-player-by-id', function (data) {
-			console.log(data);
-			Characters.splice(data.id, 1);
 		});
 
 		socket.on('disconnect', function() {
 			console.log('closed socket id : ' + socket.id);
-			var charId = mapOfClientAndCharacter[socket.id];
+			var charId = mapOfClientAndCharacterId[socket.id];
 			console.log('remove char by id = ' + charId);
 			Characters.splice(Characters.indexOf(charId), 1);
 			socket.broadcast.emit('player-remove', {id : charId});
+		});
+
+		socket.on('local-player-info-update', function(data) {
+			//var id = mapOfClientAndCharacterId[socket.id];
+			mapOfClientAndCharacter[socket.id].position = data.position;
+			mapOfClientAndCharacter[socket.id].bmpPosition = data.bmpPosition;
 		});
 
 		setInterval(function() {
@@ -57,6 +60,6 @@ exports.start = function(io) {
 				socket.emit('broadcast-all-players-info', {characters: Characters, bombs: Bombs});
 				socket.broadcast.emit('broadcast-all-players-info', {characters: Characters, bombs: Bombs});
 			}
-		}, 400);
+		}, 200);
 	}) ;
 };
