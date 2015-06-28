@@ -64,7 +64,7 @@ Character = Entity.extend({
         if (!this.alive)
             return ;
 
-        var pixel = Utils.convertToBitmapPosition(metadata.position) ;
+        //var pixel = Utils.convertToBitmapPosition(metadata.position) ;
         // fix image bias
         //this.bmp.x = pixel.x - 4;
         //this.bmp.y = pixel.y - 8;
@@ -87,6 +87,9 @@ Character = Entity.extend({
 
         // update position
         this.updateRemotePosition(metadata);
+
+        if (this.detectFire())
+            this.die() ;
     },
 
     update: function(metadata) {
@@ -283,7 +286,7 @@ Character = Entity.extend({
     } ,
 
     detectFire: function() {
-        var bombs = gameEngine.localBombs ;
+        var bombs = gameEngine.localBombs.concat(gameEngine.remoteBombs) ;
 
         for (var i = 0 ; i < bombs.length ; i++)
         {
