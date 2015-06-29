@@ -9,6 +9,7 @@ mapOfClientAndCharacter = {};
 var Entity = require('./Entity');
 exports.start = function(io) {
 	io.on('connection' , function(socket) {
+		console.log(client.request.headers.cookie);
 		console.log('currentSocket : ' + socket.id);
 		socket.on('demand-on-players-list', function() {
 			Characters.forEach (function (character) {
@@ -24,12 +25,6 @@ exports.start = function(io) {
 			socket.emit('get-chat' , data) ;
 			socket.broadcast.emit('get-chat' , data) ;
 		});
-
-/*		socket.on('send-character-movement' , function(data) {
-			console.log(data) ;
-			socket.emit('get-character-movement' , data) ;
-			socket.broadcast.emit('broadcast-character-movement' , data) ;
-		}) ;*/
 
 		socket.on('add-player', function(data) {
 			candidateID++;

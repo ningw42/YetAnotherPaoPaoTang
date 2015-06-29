@@ -1,57 +1,171 @@
 <!DOCTYPE html>
-<html lang="en">
-  <head>
+<html>
+<head lang="en">
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Rice Bomber</title>
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <!-- <link rel="icon" href="../../favicon.ico"> -->
 
+    <title>BomberMan</title>
+
+    <!-- Bootstrap core CSS -->
     <link href="css/bootstrap.min.css" rel="stylesheet">
-    <link href="css/bootstrap-theme.min.css" rel="stylesheet">
-    <link href="css/app.css" rel="stylesheet">
 
-    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
-    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
-    <!--[if lt IE 9]>
-      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
-      <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
-    <![endif]-->
-  </head>
-  <body>
-      <div class="row">
-      <div class="col-md-8">
-        <div id="game">
-          <canvas id="canvas" width="936" height="600"></canvas>
-        </div>
-      </div>
-      <div class="col-md-4">
-        <div class="well" id="chat-room">
-        </div>
-        <div class="input-group">
-          <input type="text" class="form-control" id="chat-text" name="chat-text">
-          <span class="input-group-btn">
-            <button class="btn btn-default" type="button" id="send-btn">Send</button>
-          </span>
-        </div>
-      </div>
-    </div>
-   
+    <!-- Custom styles for this template -->
+    <link href="css/login.css" rel="stylesheet">
 
-    <script src="socket.io/socket.io.js"></script>
     <script src="lib/jquery-2.1.4.min.js"></script>
-    <script src="lib/bootstrap.min.js"></script>
-    <script src="lib/easeljs-0.7.1.min.js"></script>
-    <script src="lib/preloadjs-0.4.1.min.js"></script>
-    <script src="js/Class.js"></script>
-    <script src="js/Entity.js"></script>
-    <script src="js/Utils.js"></script>
-    <script src="js/Tile.js"></script>
-    <script src="js/Character.js"></script>
-    <script src="js/Bomb.js"></script>
-    <script src="js/Flame.js"></script>
-    <script src="js/Input.js"></script>
-    <script src="js/Game.js"></script>
-    <script src="js/Connect.js"></script>
+    <script type="text/javascript">
+        $(function() {
+            $('#login-form-link').click(function(e) {
+                $("#login-form").delay(100).fadeIn(100);
+                $("#register-form").fadeOut(100);
+                $('#register-form-link').removeClass('active');
+                $(this).addClass('active');
+                e.preventDefault();
+            });
+            $('#register-form-link').click(function(e) {
+                $("#register-form").delay(100).fadeIn(100);
+                $("#login-form").fadeOut(100);
+                $('#login-form-link').removeClass('active');
+                $(this).addClass('active');
+                e.preventDefault();
+            });
 
-  </body>
+            $('#login-submit').click(function (e) {
+                var username = $('#username').val();
+                var password = $('#password').val();
+                if (username.length == 0 || password.length == 0) {
+                    alert ('请输入用户名和密码');
+                } else {
+                    $.post('userLogin', {username: username, password: password}, function (data) {
+                        if (data == 'SUCCESS') {
+                            alert('登陆成功');
+                            window.location.href='game';
+                        } else if (data == 'WRONG_PASSWORD') {
+                            alert('密码错误');
+                        } else if (data == 'NO_USER') {
+                            alert('不存在的用户');
+                        }
+                    }, 'text');
+                }
+                e.preventDefault();
+            });
+
+            $('#register-submit').click(function (e) {
+                var username = $('#reg-username').val();
+                var password = $('#reg-password').val();
+                var confirmPassword = $('#confirm-password').val();
+                if (username.length == 0 || password.length == 0 || confirmPassword.length == 0) {
+                    alert('请完整的填写信息');
+                } else if (password != confirmPassword) {
+                    alert('两次输入的密码不一致');
+                } else {
+                    $.post('userRegister', {username: username, password: password}, function (data) {
+                        if (data == 'DUP_USERNAME') {
+                            alert('该用户名已被注册');
+                        } else if (data == 'SUCCESS') {
+                            alert('注册成功，登陆中...');
+                        }
+                    }, 'text');
+                }
+                e.preventDefault();
+            });
+
+        });
+    </script>
+</head>
+<body>
+<div class="container">
+    <div class="row">
+        <div class="col-md-6 col-md-offset-3">
+            <div class="panel panel-login">
+                <div class="panel-heading">
+                    <div class="row">
+                        <div class="col-xs-6">
+                            <a href="#" class="active" id="login-form-link">Login</a>
+                        </div>
+                        <div class="col-xs-6">
+                            <a href="#" id="register-form-link">Register</a>
+                        </div>
+                    </div>
+                    <hr>
+                </div>
+                <div class="panel-body">
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <!-- begin of login form -->
+                            <div id="login-form" role="form" style="display: block;">
+                                <div class="form-group">
+                                    <div class="input-group">
+                                            <span class="input-group-addon" id="username-addon-login">
+                                                <span class="glyphicon glyphicon-user" aria-hidden="true"></span>
+                                            </span>
+                                        <input type="text" name="username" id="username" tabindex="1" class="form-control" placeholder="Username">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="input-group">
+                                            <span class="input-group-addon" id="password-addon-login">
+                                                <span class="glyphicon glyphicon-lock" aria-hidden="true"></span>
+                                            </span>
+                                        <input type="password" name="password" id="password" tabindex="2" class="form-control" placeholder="Password">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="row">
+                                        <div class="col-sm-6 col-sm-offset-3">
+                                            <input type="submit" name="login-submit" id="login-submit" tabindex="4" class="form-control btn btn-login" value="Log In">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- end of login form -->
+                            <!-- begin of register form -->
+                            <div id="register-form" role="form" style="display: none;">
+                                <div class="form-group">
+                                    <div class="input-group">
+                                            <span class="input-group-addon" id="username-addon-reg">
+                                                <span class="glyphicon glyphicon-user" aria-hidden="true"></span>
+                                            </span>
+                                        <input type="text" name="username" id="reg-username" tabindex="1" class="form-control" placeholder="Username">
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <div class="input-group">
+                                            <span class="input-group-addon" id="password-addon-reg">
+                                                <span class="glyphicon glyphicon-lock" aria-hidden="true"></span>
+                                            </span>
+                                        <input type="password" name="password" id="reg-password" tabindex="2" class="form-control" placeholder="Password">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="input-group">
+                                            <span class="input-group-addon" id="password-confirm-addon-reg">
+                                                <span class="glyphicon glyphicon-lock" aria-hidden="true"></span>
+                                            </span>
+                                        <input type="password" name="confirm-password" id="confirm-password" tabindex="2" class="form-control"  placeholder="Confirm Password">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="row">
+                                        <div class="col-sm-6 col-sm-offset-3">
+                                            <input type="submit" name="register-submit" id="register-submit" tabindex="4" class="form-control btn btn-register" value="Register Now">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- end of register form -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div> <!-- /container -->
+</body>
 </html>
