@@ -6,10 +6,22 @@ candidateID = 0;
 mapOfClientAndCharacterId = {};
 mapOfClientAndCharacter = {};
 
+LoggedPlayers = [];
+
 var Entity = require('./Entity');
 exports.start = function(io) {
 	io.on('connection' , function(socket) {
-		console.log(client.request.headers.cookie);
+		var cookie = socket.handshake.headers.cookie;
+		var username = null;
+		if (cookie) {
+			username = cookie.substring(cookie.indexOf('=') + 1, cookie.indexOf(';'));
+			if (LoggedPlayers[username] == true) {
+				socket.emit('has-logged-in');
+			} else {
+				LoggedPlayers[username] = true;
+			}
+		}
+
 		console.log('currentSocket : ' + socket.id);
 		socket.on('demand-on-players-list', function() {
 			Characters.forEach (function (character) {
@@ -22,8 +34,9 @@ exports.start = function(io) {
 		});
 
 		socket.on('send-chat' , function(data) {
-			socket.emit('get-chat' , data) ;
-			socket.broadcast.emit('get-chat' , data) ;
+			console.log(username + "fuck");
+			socket.emit('get-chat' , {user: username, msg : data.msg}) ;
+			socket.broadcast.emit('get-chat' , {user: username, msg : data.msg}) ;
 		});
 
 		socket.on('add-player', function(data) {
@@ -78,6 +91,9 @@ exports.start = function(io) {
 			console.log('remove char by id = ' + charId);
 			Characters.splice(Characters.indexOf(charId), 1);
 			socket.broadcast.emit('player-remove', {id : charId});
+
+			LoggedPlayers[username] = false;
+			socket.handshake.headers.cookie = null;
 		});
 
 		socket.on('local-player-info-update', function(data) {

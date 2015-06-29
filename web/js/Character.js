@@ -88,8 +88,10 @@ Character = Entity.extend({
         // update position
         this.updateRemotePosition(metadata);
 
-        if (this.detectFire())
-            this.die() ;
+        if (this.detectFire()) {
+            gameEngine.score++;
+            this.die();
+        }
     },
 
     update: function(metadata) {
@@ -156,8 +158,10 @@ Character = Entity.extend({
             }
         }
 
-        if (this.detectFire())
-            this.die() ;
+        if (this.detectFire()) {
+            this.die();
+            console.log(gameEngine.score);
+        }
      } ,
 
     // Something wrong here

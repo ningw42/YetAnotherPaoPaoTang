@@ -2,8 +2,7 @@ var scene = gameEngine;
 $(document).ready(function() {
 	$('#send-btn').click(function() {
 		message = $('#chat-text').val() ;
-		username = 'steven5538' ;
-		gameEngine.socket.emit('send-chat' , {user: username , msg: message}) ;
+		gameEngine.socket.emit('send-chat' , {msg: message}) ;
 		$('#chat-text').val('') ;
 	}) ;
 
@@ -13,7 +12,6 @@ $(document).ready(function() {
 	}) ;
 
 	gameEngine.socket.on('get-chat' , function(data) {
-		console.log(data.user + ': ' + data.msg) ;
 		$('#chat-room').html($('#chat-room').html() + '<span class="username">' + data.user + '</span> ' + data.msg + '<br />') ;
 		$('#chat-room').scrollTop($('#chat-room').height() + $('#chat-room').scrollTop()) ;
 	}) ;
@@ -45,6 +43,16 @@ $(document).ready(function() {
 		scene.update(data);
 		//console.log(data);
 	});
+
+	scene.socket.on('has-logged-in', function(data) {
+		console.log(data + ' 你已经在线！');
+		window.location.href='/';
+	});
+
+/*	scene.socket.on('has-not-logged-in', function(data) {
+		console.log(data + ' 你已经在线！');
+		window.location.href='/';
+	});*/
 });
 
 /*

@@ -27,6 +27,8 @@ GameEngine = Class.extend({
 	localCharacter: null ,
 	numberOfPlayers: 0 ,
 
+	score: 0,
+
 	socket: null ,
 
 	init: function() {

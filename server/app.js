@@ -57,7 +57,7 @@ app.post('/userRegister', function(req, res){
 });
 
 app.get('/game', function (req, res) {
-	if (req.cookie) {
+	if (req.cookies.username) {
 		res.sendfile(path.resolve(__dirname + '/../web/game.html'));
 	} else {
 		res.redirect('/');
