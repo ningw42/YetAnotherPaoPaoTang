@@ -7,7 +7,8 @@ mapOfClientAndCharacterId = {};
 mapOfClientAndCharacter = {};
 
 LoggedPlayers = [];
-
+var mysql = require('./Database');
+mysql.connect();
 var Entity = require('./Entity');
 exports.start = function(io) {
 	io.on('connection' , function(socket) {
@@ -102,12 +103,28 @@ exports.start = function(io) {
 			mapOfClientAndCharacter[socket.id].bmpPosition = data.bmpPosition;
 		});
 
+		socket.on('report-score', function(data) {
+			var score = data.score;
+			console.log(score + ' ,' + username + ' , fucker');
+			mysql.query('INSERT INTO global_records (score, username) VALUES ( ' + score + ', \'' + username + '\')', function(err, rows, fields) {
+				console.log(rows);
+			});
+		});
+/*		socket.on('local-character-die', function (data) {
+			for(var i = 0; i < Characters.length; i++) {
+				if (Characters[i].id == data.id) {
+					Characters.splice([i, 1]);
+					break;
+				}
+			}
+			mapOfClientAndCharacter[socket.id] = null;
+		});*/
 		setInterval(function() {
 			// broadcast data 25 times per second
 			if (Characters.length > 0) {
 				socket.emit('broadcast-all-players-info', {characters: Characters, bombs: mapOfCharacterAndBombList});
 				socket.broadcast.emit('broadcast-all-players-info', {characters: Characters, bombs: mapOfCharacterAndBombList});
 			}
-		}, 200);
+		}, 100);
 	}) ;
 };

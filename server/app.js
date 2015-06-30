@@ -64,6 +64,20 @@ app.get('/game', function (req, res) {
 	}
 });
 
+app.get('/rank', function(req, res){
+	if (req.cookies.username) {
+		res.sendfile(path.resolve(__dirname + '/../web/rank.html'));
+	} else {
+		res.redirect('/');
+	}
+});
+
+app.get('/getRank', function(req, res){
+	mysql.query('SELECT * FROM global_records ORDER BY score DESC LIMIT 20', function(err, rows, fields) {
+		res.send(rows);
+	});
+});
+
 monitor = require('./monitor.js').start(io) ;
 
 server.listen(8080 , function() {

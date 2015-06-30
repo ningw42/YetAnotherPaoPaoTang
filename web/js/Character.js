@@ -89,8 +89,15 @@ Character = Entity.extend({
         this.updateRemotePosition(metadata);
 
         if (this.detectFire()) {
-            gameEngine.score++;
             this.die();
+
+            // remove character from array.
+            for (var i = 0; i < gameEngine.remoteCharacters.length; i++) {
+                if (gameEngine.remoteCharacters[i].id == this.id) {
+                    gameEngine.remoteCharacters.splice(i, 1);
+                    break;
+                }
+            }
         }
     },
 
@@ -160,50 +167,60 @@ Character = Entity.extend({
 
         if (this.detectFire()) {
             this.die();
-            console.log(gameEngine.score);
+            var canvas = document.getElementById('canvas');
+            var context = canvas.getContext('2d');
+
+            //gameEngine.socket.emit('local-character-die', {id:this.id});
+            // remove localCharacter from game engine.
+            showModal(gameEngine.score);
+            gameEngine.socket.emit('report-score', {score : gameEngine.score});
+            gameEngine.score = 0;
+            gameEngine.localCharacter = null;
         }
      } ,
 
-    // Something wrong here
+
     bombListener: function() {
         var handler = this ;
         console.log('add listener') ;
         console.log(handler);
         inputEngine.addListener(this.controls.bomb , function() {
-            console.log("current bomb: " + gameEngine.localBombs.length) ;
-            for (var i = 0 ; i < gameEngine.localBombs.length ; i++)
-            {
-                var bomb = gameEngine.localBombs[i] ;
-                if (Utils.comparePositions(bomb.position , handler.position))
-                    return ;
-            }
+            if(gameEngine.localCharacter) {
+                console.log("current bomb: " + gameEngine.localBombs.length) ;
+                for (var i = 0 ; i < gameEngine.localBombs.length ; i++)
+                {
+                    var bomb = gameEngine.localBombs[i] ;
+                    if (Utils.comparePositions(bomb.position , handler.position))
+                        return ;
+                }
 
-            var unexplodedBombs = 0 ;
-            for (var i = 0 ; i < handler.bombs.length ; i++)
-            {
-                if (!handler.bombs[i].exploded)
-                    unexplodedBombs += 1 ;
-            }
-            //console.log("unexplodedBombs: " + unexplodedBombs) ;
-            //console.log(unexplodedBombs < handler.bombMax) ;
-            //console.log(handler.bombMax) ;
+                var unexplodedBombs = 0 ;
+                for (var i = 0 ; i < handler.bombs.length ; i++)
+                {
+                    if (!handler.bombs[i].exploded)
+                        unexplodedBombs += 1 ;
+                }
+                //console.log("unexplodedBombs: " + unexplodedBombs) ;
+                //console.log(unexplodedBombs < handler.bombMax) ;
+                //console.log(handler.bombMax) ;
 
-            // Something wrong here
-            if (unexplodedBombs < handler.bombMax)
-            {
-                //console.log(handler);
-                var bomb = new Bomb(handler, handler.totalNumberOfBombs) ;
-                handler.bombs.push(bomb) ;
-                gameEngine.localBombs.push(bomb) ;
+                // Something wrong here
+                if (unexplodedBombs < handler.bombMax)
+                {
+                    //console.log(handler);
+                    var bomb = new Bomb(handler, handler.totalNumberOfBombs) ;
+                    handler.bombs.push(bomb) ;
+                    gameEngine.localBombs.push(bomb) ;
 
-                // add remove listener to new generated bomb
-                bomb.setExplodeListener(function() {
-                    // remove from character
-                    Utils.removeFromArray(handler.bombs , bomb) ;
-                }) ;
+                    // add remove listener to new generated bomb
+                    bomb.setExplodeListener(function() {
+                        // remove from character
+                        Utils.removeFromArray(handler.bombs , bomb) ;
+                    }) ;
 
-                gameEngine.socket.emit('add-bomb', {position:bomb.position, characterId:bomb.characterId, id:bomb.id});
-                handler.totalNumberOfBombs = (handler.totalNumberOfBombs + 1) % handler.bombMax;
+                    gameEngine.socket.emit('add-bomb', {position:bomb.position, characterId:bomb.characterId, id:bomb.id});
+                    handler.totalNumberOfBombs = (handler.totalNumberOfBombs + 1) % handler.bombMax;
+                }
             }
         }) ;
     } ,
@@ -298,8 +315,12 @@ Character = Entity.extend({
             for (var j = 0 ; j < bomb.flames.length ; j++)
             {
                 var flame = bomb.flames[j] ;
-                if (bomb.exploded && flame.position.x == this.position.x && flame.position.y == this.position.y)
-                    return true ;
+                if (bomb.exploded && flame.position.x == this.position.x && flame.position.y == this.position.y) {
+                    if (gameEngine.localCharacter.id == bomb.characterId) {
+                        gameEngine.score ++;
+                    }
+                    return true;
+                }
             }
         }
 

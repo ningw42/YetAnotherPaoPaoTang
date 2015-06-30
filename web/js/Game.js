@@ -109,7 +109,8 @@ GameEngine = Class.extend({
 		}
 	},
 
-	update: function(data) {
+	updataBombs: function() {
+		//console.log('fuck');
 		if (this.localBombs) {
 			for (var i = 0; i < gameEngine.localBombs.length; i++)
 				gameEngine.localBombs[i].update();
@@ -119,7 +120,11 @@ GameEngine = Class.extend({
 			for (var i = 0; i < gameEngine.remoteBombs.length; i++)
 				gameEngine.remoteBombs[i].update();
 		}
+	},
 
+	update: function(data) {
+
+		this.updataBombs();
 		var chars = data.characters;
 		var localChar = null;
 		//console.log('before ' + chars.length);
@@ -258,4 +263,18 @@ GameEngine = Class.extend({
 gameEngine = new GameEngine() ;
 $(document).ready(function(){
 	gameEngine.load() ;
-})
+	//setInterval(gameEngine.updataBombs, 40);
+});
+
+var showModal = function(score) {
+	$('p').text('你的得分为 : ' + score);
+	$('.modal').modal('show');
+};
+
+$('.btn-default').click(function () {
+	location.reload();
+});
+
+$('.btn-primary').click(function () {
+	window.location.href='rank';
+});

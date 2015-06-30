@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>BomberMan</title>
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <!-- Popup -->
+     <link href='css/app.css' rel='stylesheet'>
+
+    <!-- jQuery -->
+    <script src="lib/jquery-2.1.4.min.js"></script>
+    <!-- Bootstrap -->
+    <script src="lib/bootstrap.min.js"></script>
+    <!-- Popup -->
+    <!-- // <script src="js/popbox.min.js"></script> -->
+</head>
+<body>
+<div class="panel panel-default panel-size">
+    <div class="panel-heading">
+        <ol class="breadcrumb breadcrumb-post">
+            <li class="active">排行榜</li>
+            <button class="btn btn-success btn-xs">返回游戏</button>
+        </ol>
+    </div>
+    <div class="panel-body" style="padding-bottom: 0px">
+        <table class="table table-striped table-hover table-content">
+            <thead>
+            <tr>
+                <th>用户名</th>
+                <th>得分</th>
+            </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+    </div>
+</body>
+<script type="text/javascript">
+    $(document).ready(function(){
+        $.get('/getRank', function (res) {
+           for (var index in res) {
+               $('tbody').append("<tr class=\"table-hover\">\
+               <td width=\"50%\">\
+               <p style=\"margin-bottom: 0px\">" + res[index].username + "</p>\
+               </td>\
+               <td width=\"50%\">\
+               <p style=\"margin-bottom: 0px\">" + res[index].score + "</p>\
+               </td>\
+               </tr>")
+           }
+        });
+
+        $('button').click(function () {
+            window.location.href='game';
+        });
+    });
+</script>
+</html>
