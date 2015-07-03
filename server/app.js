@@ -78,7 +78,7 @@ app.get('/getRank', function(req, res){
 	});
 });
 
-monitor = require('./monitor.js').start(io) ;
+monitor = require('./Monitor.js').start(io) ;
 
 server.listen(8080 , function() {
 	console.log('Listening on %s:%d' , server.address().address , server.address().port) ;

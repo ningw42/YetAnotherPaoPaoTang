@@ -15,9 +15,9 @@ Project of B/S Course.
 >` npm install`
 
 ##Database Insertion
-
-1. ` CREATE DATABASE 'bomberman' `
-2. Import 'database.sql'
+1. default database connection: root@localhost -p 123456
+2. ` CREATE DATABASE 'bomberman' `
+3. Import 'database.sql'
 
 ##How To Play
 <kbd>Space</kbd> for bomb
