@@ -1,7 +1,7 @@
 Characters = [];
 Bombs = [];
 mapOfCharacterAndBombList = [];
-Flames = [];
+
 candidateID = 0;
 mapOfClientAndCharacterId = {};
 mapOfClientAndCharacter = {};
