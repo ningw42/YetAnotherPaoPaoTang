@@ -35,9 +35,9 @@ Utils.removeFromArray = function(array, item) {
     for (var i = 0; i < array.length; i++) {
         if (item == array[i]) {
             array.splice(i, 1);
+            return array;
         }
     }
-    return array;
 };
 
 Utils.intersectRect = function(character , tile) {
