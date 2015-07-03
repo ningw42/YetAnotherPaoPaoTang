@@ -8,9 +8,14 @@ Bomb = Entity.extend({
 	flames: [] ,
 	strength: 5 ,
 
-	listener: null ,
+	characterId: null,
+	character: null,
 
-	init: function(position) {
+	id: null,
+
+	explodeListener: null ,
+
+	init: function(character, id) {
 		var bombImg = gameEngine.bombImg ;
 
 		var spriteSheet = new createjs.SpriteSheet({
@@ -21,33 +26,93 @@ Bomb = Entity.extend({
 			}
 		}) ;
 
+		this.character = character;
+		this.characterId = character.id;
 		this.bmp = new createjs.Sprite(spriteSheet , 'idle') ;
 		this.bmp.scaleX = this.bmp.scaleY = gameEngine.scale ;
 
-		this.position = position ;
-		var pixels = Utils.convertToBitmapPosition(position) ;
+		this.id = id;
+		this.position = character.position ;
+		var pixels = Utils.convertToBitmapPosition(character.position) ;
 		this.bmp.x = pixels.x ;
 		this.bmp.y = pixels.y ;
 
-		var characters = gameEngine.getCharacters() ;
+		// make sure that all the players on current position if the Bomb could walk away from the it.
+		var characters = gameEngine.getRemoteCharacters() ;
 		for (var i = 0 ; i < characters.length ; i++)
 		{
 			var character = characters[i] ;
 			if (Utils.comparePositions(character.position , this.position))
 				character.escape = this ;
 		}
+		character.escape = this ;
 
 		gameEngine.stage.addChild(this.bmp) ;
+
 	} ,
+
+	FPS: function () {
+		console.log('timer id: ' + this.id + ', ' + this.timer);
+		this.timer++;
+	},
 
 	update: function() {
 		if (this.exploded)
 			return ;
 
-		this.timer++ ;
-		if (this.timer > this.timerMax * createjs.Ticker.getMeasuredFPS() && createjs.Ticker.getMeasuredFPS() != -1)
-			this.explode() ;
+		if (this.timer > 3 && this.characterId == gameEngine.localCharacter.id) {
+			// local bombs
+			this.explode();
+		} else if (this.timer > 3 && this.characterId != gameEngine.localCharacter.id) {
+			this.remoteExplode();
+		}
 	} ,
+
+	remoteExplode: function () {
+		this.exploded = true ;
+
+		var positions = this.getFlamePositions() ;
+		for (var i = 0 ; i < positions.length ; i++)
+		{
+			var position = positions[i] ;
+
+			// indicate the frame style according to its direction
+			if (position == this.position)
+				this.flame(position , 'center') ;
+			else if (position.x == this.position.x + this.strength)
+				this.flame(position , 'right') ;
+			else if (position.x == this.position.x - this.strength)
+				this.flame(position , 'left') ;
+			else if (position.y == this.position.y + this.strength)
+				this.flame(position , 'down') ;
+			else if (position.y == this.position.y - this.strength)
+				this.flame(position , 'up') ;
+			else if (position.x != this.position.x)
+				this.flame(position , 'horizontal') ;
+			else if (position.y != this.position.y)
+				this.flame(position , 'vertical') ;
+
+			// get the material of the flamed tile
+			var material = gameEngine.getTileMaterial(position) ;
+			if (material == 'wall')
+			{
+				var tile = gameEngine.getTile(position) ;
+				tile.remove() ;
+			}
+			else if (material == 'grass')
+			{
+				for (var j = 0 ; j < gameEngine.localBombs.length ; j++)
+				{
+					var bomb = gameEngine.localBombs[j] ;
+					if (!bomb.exploded && Utils.comparePositions(bomb.position , position))
+						bomb.explode() ;
+				}
+			}
+		}
+
+		//gameEngine.socket.emit('remove-bomb', {characterId:this.characterId, id:this.id});
+		this.remove() ;
+	},
 
 	explode: function() {
 		this.exploded = true ;
@@ -82,15 +147,16 @@ Bomb = Entity.extend({
 			}
 			else if (material == 'grass')
 			{
-				for (var j = 0 ; j < gameEngine.bombs.length ; j++)
+				for (var j = 0 ; j < gameEngine.localBombs.length ; j++)
 				{
-					var bomb = gameEngine.bombs[j] ;
+					var bomb = gameEngine.localBombs[j] ;
 					if (!bomb.exploded && Utils.comparePositions(bomb.position , position))
 						bomb.explode() ;
 				}
 			}
 		}
 
+		gameEngine.socket.emit('remove-bomb', {characterId:this.characterId, id:this.id});
 		this.remove() ;
 	} ,
 
@@ -99,7 +165,7 @@ Bomb = Entity.extend({
 	} ,
 
 	setExplodeListener: function(listener) {
-		this.listener = listener ;
+		this.explodeListener = listener ;
 	} ,
 
 	flame: function(position , location) {

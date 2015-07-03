@@ -1,11 +1,24 @@
-HTML5 Rice-Bomber
-=================
+#Course Project BomberMan
 
-This is the project of Software-Engineering class.
+Ning Wang 2015 All Rights Reserved
 
-Rice-Bomber is a remake of a classic game known as Bomberman. You can play against your friend on the same computer, or with the internet.
+Project of B/S Course.
 
-Install
--------
-	npm install
+##Dependency:
+- express : 4.1.1
+- socket.io : 0.9.x
+- mysql : 2.7.0
+- cookie-parser : 1.3.5
+- body-parser : 1.13.1
 
+##Install
+>` npm install`
+
+##Database Insertion
+1. default database connection: root@localhost -p 123456
+2. ` CREATE DATABASE 'bomberman' `
+3. Import 'database.sql'
+
+##How To Play
+<kbd>Space</kbd> for bomb
+<kbd>→</kbd><kbd>←</kbd><kbd>↑</kbd><kbd>↓</kbd> for character's movement
